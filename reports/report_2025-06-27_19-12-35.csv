@@ -1,0 +1,46 @@
+message
+🧪 Функциональные тесты
+------------------------------
+❌ Некоторые функциональные тесты не пройдены:
+""
+============================= test session starts =============================
+"platform win32 -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0"
+rootdir: C:\Users\mira1\OneDrive\Документы\Политех\3 курс\6 семестр\Практика\recom_sys_checker
+collected 0 items / 1 error
+""
+=================================== ERRORS ====================================
+_____________ ERROR collecting logic/tests/collaborative_tests.py _____________
+ImportError while importing test module 'C:\Users\mira1\OneDrive\Документы\Политех\3 курс\6 семестр\Практика\recom_sys_checker\logic\tests\collaborative_tests.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+C:\Users\mira1\AppData\Local\Programs\Python\Python313\Lib\importlib\__init__.py:88: in import_module
+"    return _bootstrap._gcd_import(name[level:], package, level)"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+logic\tests\collaborative_tests.py:9: in <module>
+    from sklearn.metrics import mean_squared_error
+E   ModuleNotFoundError: No module named 'sklearn'
+=========================== short test summary info ===========================
+ERROR logic/tests/collaborative_tests.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+============================== 1 error in 0.61s ===============================
+""
+""
+""
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+"solution.py:10:1: E302 expected 2 blank lines, found 1"
+solution.py:31:68: W291 trailing whitespace
+solution.py:32:42: E128 continuation line under-indented for visual indent
+solution.py:32:80: E501 line too long (82 > 79 characters)
+solution.py:65:80: E501 line too long (80 > 79 characters)
+"solution.py:103:1: E302 expected 2 blank lines, found 1"
+"solution.py:121:1: E305 expected 2 blank lines after class or function definition, found 1"
+solution.py:137:69: W292 no newline at end of file
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+Рекомендация: запустите команду `black solution.py` для автоформатирования.

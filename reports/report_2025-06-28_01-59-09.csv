@@ -1,0 +1,169 @@
+message
+🧪 Функциональные тесты
+------------------------------
+❌ Некоторые функциональные тесты не пройдены:
+""
+============================= test session starts =============================
+"platform win32 -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0"
+rootdir: C:\Users\mira1\OneDrive\Документы\Политех\3 курс\6 семестр\Практика\recom_sys_checker
+collected 11 items
+""
+logic\tests\collaborative_tests.py ...FFFFFFFF
+""
+================================== FAILURES ===================================
+___________________ test_fit_and_recommend_on_generated[1] ____________________
+""
+"task_info = None, k = 1"
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001F25DC9B680>)
+""
+logic\tests\collaborative_tests.py:75: AssertionError
+___________________ test_fit_and_recommend_on_generated[2] ____________________
+""
+"task_info = None, k = 2"
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001F25DD34820>)
+""
+logic\tests\collaborative_tests.py:75: AssertionError
+___________________ test_fit_and_recommend_on_generated[3] ____________________
+""
+"task_info = None, k = 3"
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001F25DD35540>)
+""
+logic\tests\collaborative_tests.py:75: AssertionError
+________________________ test_recommend_items_not_seen ________________________
+""
+task_info = None
+""
+    def test_recommend_items_not_seen(task_info):
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+    
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        seen_items = set(generated_dataset[generated_dataset[""user_id""] == user_id][""item""])"
+"        recs = solution.recommend(user_id=user_id, k=3)"
+    
+"        assert isinstance(recs, list)"
+">       if task_info[""filter_type""] == ""item_based"":"
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+""
+logic\tests\collaborative_tests.py:99: TypeError
+__________________________ test_repeat_fit_stability __________________________
+""
+task_info = None
+""
+    def test_repeat_fit_stability(task_info):
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+        k = 3
+        solution.fit(generated_dataset)
+"        recs_1 = solution.recommend(user_id, k)"
+    
+        solution.fit(generated_dataset)
+"        recs_2 = solution.recommend(user_id, k)"
+    
+">       if task_info[""filter_type""] == ""user_based"":"
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+""
+logic\tests\collaborative_tests.py:119: TypeError
+________________________ test_evaluate_precision_at_2 _________________________
+""
+task_info = None
+""
+    def test_evaluate_precision_at_2(task_info):
+">       if task_info[""metric""] != ""precision@2"":"
+           ^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+""
+logic\tests\collaborative_tests.py:129: TypeError
+_____________________ test_evaluate_returns_correct_rmse ______________________
+""
+task_info = None
+""
+    def test_evaluate_returns_correct_rmse(task_info):
+">       if task_info[""metric""] != ""RMSE"":"
+           ^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+""
+logic\tests\collaborative_tests.py:157: TypeError
+__________________________ test_evaluate_recall_at_3 __________________________
+""
+task_info = None
+""
+    def test_evaluate_recall_at_3(task_info):
+">       if task_info[""metric""] != ""recall@3"":"
+           ^^^^^^^^^^^^^^^^^^^
+E       TypeError: 'NoneType' object is not subscriptable
+""
+logic\tests\collaborative_tests.py:178: TypeError
+=========================== short test summary info ===========================
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[1]
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[2]
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[3]
+FAILED logic/tests/collaborative_tests.py::test_recommend_items_not_seen - Ty...
+FAILED logic/tests/collaborative_tests.py::test_repeat_fit_stability - TypeEr...
+FAILED logic/tests/collaborative_tests.py::test_evaluate_precision_at_2 - Typ...
+FAILED logic/tests/collaborative_tests.py::test_evaluate_returns_correct_rmse
+FAILED logic/tests/collaborative_tests.py::test_evaluate_recall_at_3 - TypeEr...
+"========================= 8 failed, 3 passed in 1.12s ========================="
+""
+""
+""
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+"solution.py:10:1: E302 expected 2 blank lines, found 1"
+solution.py:31:68: W291 trailing whitespace
+solution.py:32:42: E128 continuation line under-indented for visual indent
+solution.py:32:80: E501 line too long (82 > 79 characters)
+solution.py:65:80: E501 line too long (80 > 79 characters)
+"solution.py:103:1: E302 expected 2 blank lines, found 1"
+"solution.py:121:1: E305 expected 2 blank lines after class or function definition, found 1"
+solution.py:137:69: W292 no newline at end of file
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+Рекомендация: запустите команду `black solution.py` для автоформатирования.

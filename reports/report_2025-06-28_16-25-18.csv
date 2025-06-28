@@ -1,0 +1,201 @@
+message
+🧪 Функциональные тесты
+------------------------------
+✅ PASSED: test_solution_file_exists
+✅ PASSED: test_has_required_functions
+✅ PASSED: test_fit_runs_without_error
+✅ PASSED: test_fit_and_recommend_on_generated[5-1]
+✅ PASSED: test_fit_and_recommend_on_generated[5-2]
+✅ PASSED: test_fit_and_recommend_on_generated[5-3]
+✅ PASSED: test_fit_and_recommend_on_generated[42-1]
+✅ PASSED: test_fit_and_recommend_on_generated[42-2]
+✅ PASSED: test_fit_and_recommend_on_generated[42-3]
+✅ PASSED: test_fit_and_recommend_on_generated[100-1]
+✅ PASSED: test_fit_and_recommend_on_generated[100-2]
+✅ PASSED: test_fit_and_recommend_on_generated[100-3]
+✅ PASSED: test_fit_and_recommend_on_generated[250-1]
+✅ PASSED: test_fit_and_recommend_on_generated[250-2]
+✅ PASSED: test_fit_and_recommend_on_generated[250-3]
+✅ PASSED: test_recommend_items_not_seen[5]
+✅ PASSED: test_recommend_items_not_seen[42]
+✅ PASSED: test_recommend_items_not_seen[100]
+✅ PASSED: test_recommend_items_not_seen[250]
+✅ PASSED: test_repeat_fit_stability[5]
+✅ PASSED: test_repeat_fit_stability[42]
+✅ PASSED: test_repeat_fit_stability[100]
+✅ PASSED: test_repeat_fit_stability[250]
+❌ FAILED: test_evaluate_precision_at_2[5]
+❌ FAILED: test_evaluate_precision_at_2[42]
+❌ FAILED: test_evaluate_precision_at_2[100]
+❌ FAILED: test_evaluate_precision_at_2[250]
+✅ PASSED: test_solution_file_exists
+✅ PASSED: test_has_required_functions
+✅ PASSED: test_fit_runs_without_error
+✅ PASSED: test_fit_and_recommend_on_generated[5-1]
+✅ PASSED: test_fit_and_recommend_on_generated[5-2]
+✅ PASSED: test_fit_and_recommend_on_generated[5-3]
+✅ PASSED: test_fit_and_recommend_on_generated[42-1]
+✅ PASSED: test_fit_and_recommend_on_generated[42-2]
+✅ PASSED: test_fit_and_recommend_on_generated[42-3]
+✅ PASSED: test_fit_and_recommend_on_generated[100-1]
+✅ PASSED: test_fit_and_recommend_on_generated[100-2]
+✅ PASSED: test_fit_and_recommend_on_generated[100-3]
+✅ PASSED: test_fit_and_recommend_on_generated[250-1]
+✅ PASSED: test_fit_and_recommend_on_generated[250-2]
+✅ PASSED: test_fit_and_recommend_on_generated[250-3]
+✅ PASSED: test_recommend_items_not_seen[5]
+✅ PASSED: test_recommend_items_not_seen[42]
+✅ PASSED: test_recommend_items_not_seen[100]
+✅ PASSED: test_recommend_items_not_seen[250]
+✅ PASSED: test_repeat_fit_stability[5]
+✅ PASSED: test_repeat_fit_stability[42]
+✅ PASSED: test_repeat_fit_stability[100]
+✅ PASSED: test_repeat_fit_stability[250]
+❌ FAILED: test_evaluate_precision_at_2[5]
+❌ FAILED: test_evaluate_precision_at_2[42]
+❌ FAILED: test_evaluate_precision_at_2[100]
+❌ FAILED: test_evaluate_precision_at_2[250]
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+solutions/solution.py:5:1: F401 'sklearn.model_selection.train_test_split' imported but unused
+"solutions/solution.py:16:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:20:39: W291 trailing whitespace
+solutions/solution.py:37:41: E127 continuation line over-indented for visual indent
+"solutions/solution.py:42:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:47:24: W291 trailing whitespace
+solutions/solution.py:49:5: F824 `global user_item_matrix` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global item_similarity` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global users` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global items` is unused: name is never assigned in scope
+"solutions/solution.py:87:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:89:5: F824 `global user_item_matrix` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global item_similarity` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global users` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global items` is unused: name is never assigned in scope
+solutions/solution.py:120:80: E501 line too long (103 > 79 characters)
+solutions/solution.py:121:46: W291 trailing whitespace
+solutions/solution.py:141:1: E303 too many blank lines (3)
+solutions/solution.py:141:80: E501 line too long (113 > 79 characters)
+solutions/solution.py:142:80: E501 line too long (115 > 79 characters)
+solutions/solution.py:142:116: W292 no newline at end of file
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+""
+📋 Подробности:
+uYTYT^ --- solutions\solution.py	2025-06-28 13:25:15.398014+00:00
++++ solutions\solution.py	2025-06-28 13:25:18.522370+00:00
+"@@ -11,42 +11,45 @@"
+ item_similarity = None
+ user_item_matrix = None
+ items = None
+ users = None
+ 
++
+ def fit(train_data: pd.DataFrame) -> None:
+"     """""""
+-      Раскомментируй и пиши код здесь
+-      Обучает модель на тренировочном датасет
+-      train_data - данные для обучения       
++    Раскомментируй и пиши код здесь
++    Обучает модель на тренировочном датасет
++    train_data - данные для обучения
+"     """""""
+"     """"""Обучает модель на тренировочном датасете."""""""
+     # Создаем user-item матрицу
+"     global user_item_matrix, item_similarity, users, items"
+-    users = train_data['user_id'].unique()
+-    items = train_data['item'].unique()
+"+    users = train_data[""user_id""].unique()"
+"+    items = train_data[""item""].unique()"
+ 
+     # Создаем разреженную матрицу пользователь-фильм
+"     user_to_idx = {user: idx for idx, user in enumerate(users)}"
+"     item_to_idx = {item: idx for idx, item in enumerate(items)}"
+ 
+-    rows = train_data['user_id'].map(user_to_idx)
+-    cols = train_data['item'].map(item_to_idx)
+-    ratings = train_data['rating']
+"+    rows = train_data[""user_id""].map(user_to_idx)"
+"+    cols = train_data[""item""].map(item_to_idx)"
+"+    ratings = train_data[""rating""]"
+ 
+"-    user_item_matrix = csr_matrix((ratings, (rows, cols)),"
+"-                                        shape=(len(users), len(items)))"
++    user_item_matrix = csr_matrix(
+"+        (ratings, (rows, cols)), shape=(len(users), len(items))"
++    )
+ 
+     # Вычисляем косинусную схожесть между фильмами (аналог Pearson)
+     item_similarity = cosine_similarity(user_item_matrix.T)
+ 
++
+" def recommend(user_id: int, k: int) -> List[int]:"
+"     """""""
+-      Раскомментируй и пиши код здесь
+"-      Возвращает список из k item_id, рекомендованных пользователю."
+"-      user_id - пользователь, для которого подбираются рекоммендации"
+-      k - число соседей   
++    Раскомментируй и пиши код здесь
+"+    Возвращает список из k item_id, рекомендованных пользователю."
+"+    user_id - пользователь, для которого подбираются рекоммендации"
++    k - число соседей
+"     """""""
+"     global user_item_matrix, item_similarity, users, items"
+"     """"""Возвращает список из k item_id, рекомендованных пользователю."""""""
+     if user_id not in users:
+         return []
+"@@ -82,10 +85,11 @@"
+ 
+     # Сортируем по предсказанному рейтингу и возвращаем top-k
+"     pred_ratings.sort(key=lambda x: x[1], reverse=True)"
+"     return [item for item, _ in pred_ratings[:k]]"
+ 
++
+" def predict(user_id: int, item_id: int) -> float:"
+"     """"""Предсказывает рейтинг для пары пользователь-фильм."""""""
+"     global user_item_matrix, item_similarity, users, items"
+     if user_id not in users or item_id not in items:
+         return 0.0
+"@@ -114,29 +118,28 @@"
+     return pred_rating
+ 
+ 
+ def evaluate(test_data: pd.DataFrame) -> float:
+"     """""""
+-      Раскомментируй и пиши код здесь
+"-      Оценивает модель на тестовой выборке и возвращает значение метрики (например, RMSE, precision@2)."
+-      test_data - данные для рассчета метрики  
++    Раскомментируй и пиши код здесь
+"+    Оценивает модель на тестовой выборке и возвращает значение метрики (например, RMSE, precision@2)."
++    test_data - данные для рассчета метрики
+"     """""""
+"     """"""Оценивает модель на тестовой выборке и возвращает RMSE."""""""
+     y_true = []
+     y_pred = []
+ 
+"     for _, row in test_data.iterrows():"
+-        user_id = row['user_id']
+-        item_id = row['item']
+-        true_rating = row['rating']
+"+        user_id = row[""user_id""]"
+"+        item_id = row[""item""]"
+"+        true_rating = row[""rating""]"
+ 
+"         pred_rating = predict(user_id, item_id)"
+ 
+         y_true.append(true_rating)
+         y_pred.append(pred_rating)
+ 
+"     return sqrt(mean_squared_error(y_true, y_pred))"
+ 
+ 
+-
+" # Если тебе потребуются дополнительные функции, можешь смело их добавлять, они не будут учитываться при проверке."
+"-# Тебе предложен датасет для проверки работы твоей программы, его можно скачать на той же странице, что и этот файл"
+\ No newline at end of file
+"+# Тебе предложен датасет для проверки работы твоей программы, его можно скачать на той же странице, что и этот файл"

@@ -1,80 +1,132 @@
 import subprocess
+import sys
+import os
 import json
-import csv
-from pathlib import Path
-from task_generator import CollaborativeTaskGenerator
-
-CSV_PATH = Path("validation_report.csv")
-TESTS_DIR = Path("tests")
+from typing import Dict
 
 
-def write_csv_row(row):
-    header = ["Тип", "Фильтрация", "Название", "Статус", "Сообщение"]
-    write_header = not CSV_PATH.exists()
-    with open(CSV_PATH, "a", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
-        if write_header:
-            writer.writerow(header)
-        writer.writerow(row)
+def run_pytest(task_info: Dict) -> str:
+    """
+    Запускает pytest с передачей task_info как параметра.
+    Возвращает текстовый отчет.
+    """
+    test_file_map = {
+        "collaborative": "logic/tests/collaborative_tests.py",
+        # Здесь можно расширить под другие типы заданий
+    }
 
+    test_file = test_file_map.get(task_info["type"])
+    if not test_file or not os.path.exists(test_file):
+        return f"[Ошибка] Не найден тестовый файл для типа задачи: {task_info['type']}"
 
-def generate_task_info():
-    generator = CollaborativeTaskGenerator()
-    task_text, task_info = generator.generate_task()
+    # Сохраняем task_info во временный файл, чтобы pytest мог его загрузить
 
-    # (опционально) сохраняем в файл
-    with open("task_info.json", "w", encoding="utf-8") as f:
-        json.dump(task_info, f, indent=2, ensure_ascii=False)
+    task_info_str = json.dumps(task_info)
 
-    print("📘 Сгенерировано задание:")
-    print(task_text)
-    return task_info
+    env = os.environ.copy()
+    env["TASK_INFO"] = task_info_str  # передаём как переменную окружения
 
-
-def check_style():
-    print("⚙️ Проверка стиля...")
-    flake8 = subprocess.run(["flake8", "solution.py"], capture_output=True, text=True)
-    write_csv_row(["Style", "-", "flake8", "PASS" if flake8.returncode == 0 else "FAIL", flake8.stdout.strip() or "OK"])
-
-    black = subprocess.run(["black", "--check", "solution.py"], capture_output=True, text=True)
-    write_csv_row(["Style", "-", "black", "PASS" if black.returncode == 0 else "FAIL", black.stdout.strip() or "OK"])
-
-
-def run_tests(filter_type):
-    test_file = TESTS_DIR / f"test_{filter_type}.py"
-    if not test_file.exists():
-        write_csv_row(["Test", filter_type, "-", "FAIL", f"Файл {test_file.name} не найден"])
-        return
+    print(f"🔍 Запуск pytest для файла: {test_file}...")
 
     result = subprocess.run(
-        ["pytest", str(test_file), "--json-report", "--json-report-file=report.json"],
+        [sys.executable, "-m", "pytest", test_file, "-v", "-rA"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=env,
+    )
+
+    output = result.stdout
+
+    report_lines = []
+    #print("STDOUT:\n", result.stdout)
+
+    
+    for line in output.splitlines():
+        if "PASSED" in line:
+            test_name = line.split("::")[-1].split()[0]
+            report_lines.append(f"✅ PASSED: {test_name}")
+        elif "FAILED" in line:
+            test_name = line.split("::")[-1].split()[0]
+            report_lines.append(f"❌ FAILED: {test_name}")
+            
+            # Добавляем сообщение об ошибке из следующих строк
+            error_message = extract_error_message(output, line)
+            print(f"ERROR: {error_message}")
+            if error_message:
+                report_lines.append(f"    Сообщение: {error_message}")
+            
+            in_error = True
+
+    return "\n".join(report_lines or ["✅ Все тесты пройдены успешно!"])
+
+def extract_error_message(full_output, failed_line):
+    """Извлекает сообщение об ошибке после строки с FAILED"""
+    lines = full_output.splitlines()
+    idx = lines.index(failed_line)
+    
+    # Ищем следующие строки с ошибкой
+    for i in range(idx+1, min(idx+100, len(lines))):  # Проверяем 10 следующих строк
+        print(f"!!!!! {lines[i]}")
+        if "assert:" in lines[i]:
+            return lines[i].split("assert:")[1].strip()
+        if "assert       " in lines[i]:  # Строки с ошибкой в pytest
+            return lines[i][8:].strip()
+    
+    return None
+
+def run_flake8(file_path="solutions/solution.py") -> str:
+    print(f"🔍 Проверка стиля с помощью flake8 для файла: {file_path}...")
+    result = subprocess.run(
+        ["flake8", file_path, "--ignore=W293"],
         capture_output=True,
         text=True
     )
 
-    if Path("report.json").exists():
-        with open("report.json", encoding="utf-8") as f:
-            report = json.load(f)
-
-        for test in report.get("tests", []):
-            name = test["nodeid"]
-            status = test["outcome"]
-            msg = "OK" if status == "passed" else test.get("call", {}).get("longrepr", "Ошибка")
-            write_csv_row(["Test", filter_type, name, "PASS" if status == "passed" else "FAIL", str(msg).strip().replace("\n", " ")[:300]])
+    if result.returncode == 0:
+        return "✅ flake8: Стиль кода соответствует стандарту.\n"
+    else:
+        return f"❌ flake8: Найдены проблемы со стилем:\n{result.stdout}"
 
 
-def main():
-    if CSV_PATH.exists():
-        CSV_PATH.unlink()
-
-    task_info = generate_task_info()
-    filter_type = task_info.get("filter_type", "user_based")
-
-    check_style()
-    run_tests(filter_type)
-
-    print(f"\n✅ Отчёт сохранён: {CSV_PATH}")
+def run_black_check(file_path="solutions/solution.py") -> str:
+    print(f"🔍 Проверка форматирования с помощью black для файла: {file_path}...")
+    result = subprocess.run(
+        ["black", "--check", "--diff", file_path],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
 
 
-if __name__ == "__main__":
-    main()
+    if result.returncode == 0:
+        return "✅ black: Форматирование корректное.\n"
+    else:
+        return (
+            "❌ black: Форматирование отличается от стандарта black.\n\n"
+            "📋 Подробности:\n"
+             f"uYTYT^ {result.stdout}"
+        )
+
+
+def generate_report(task_info: Dict) -> str:
+    print("📋 Начинается проверка решения...\n")
+    report = []
+
+    # Проверка функциональности
+    functional_report = run_pytest(task_info)
+    functional_report_str = str(functional_report) if functional_report is not None else "Нет данных"
+    report.append(f"🧪 Функциональные тесты\n{'-' * 30}\n{functional_report_str}")
+    # Проверка стиля кода flake8
+    flake8_report = run_flake8()
+    report.append("🎨 Стиль кода (flake8)\n" + "-" * 30 + "\n" + flake8_report)
+
+    # Проверка black
+    black_report = run_black_check()
+    report.append("🧱 Форматирование кода (black)\n" + "-" * 30 + "\n" + black_report)
+
+    # Финальный вывод
+    full_report = "\n\n".join(report)
+    print("✅ Проверка завершена.\n")
+
+    return full_report

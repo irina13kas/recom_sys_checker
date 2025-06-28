@@ -1,0 +1,98 @@
+message
+🧪 Функциональные тесты
+------------------------------
+"assert recs != recs_2, ("
+E   AssertionError:
+E   assert [101] != [101]
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [101, 106] != [101, 106]"
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [101, 106, 119] != [101, 106, 119]"
+"assert recs != recs_2, ("
+E   AssertionError:
+E   assert [106] != [106]
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [106, 119] != [106, 119]"
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [106, 119, 113] != [106, 119, 113]"
+"assert recs != recs_2, ("
+E   AssertionError:
+E   assert [104] != [104]
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [104, 108] != [104, 108]"
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [104, 108, 103] != [104, 108, 103]"
+"assert recs != recs_2, ("
+E   AssertionError:
+E   assert [111] != [111]
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [111, 100] != [111, 100]"
+"assert recs != recs_2, ("
+E   AssertionError:
+"E   assert [111, 100, 119] != [111, 100, 119]"
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+✅ PASSED пройден
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[5-1]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[5-2]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[5-3]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[42-1]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[42-2]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[42-3]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[100-1]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[100-2]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[100-3]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[250-1]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[250-2]
+❌ Ошибка в тесте: FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[250-3]
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+solutions/solution.py:5:1: F401 'sklearn.model_selection.train_test_split' imported but unused
+"solutions/solution.py:16:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:20:39: W291 trailing whitespace
+solutions/solution.py:37:41: E127 continuation line over-indented for visual indent
+"solutions/solution.py:42:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:47:24: W291 trailing whitespace
+solutions/solution.py:49:5: F824 `global user_item_matrix` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global item_similarity` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global users` is unused: name is never assigned in scope
+solutions/solution.py:49:5: F824 `global items` is unused: name is never assigned in scope
+"solutions/solution.py:87:1: E302 expected 2 blank lines, found 1"
+solutions/solution.py:89:5: F824 `global user_item_matrix` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global item_similarity` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global users` is unused: name is never assigned in scope
+solutions/solution.py:89:5: F824 `global items` is unused: name is never assigned in scope
+solutions/solution.py:120:80: E501 line too long (103 > 79 characters)
+solutions/solution.py:121:46: W291 trailing whitespace
+solutions/solution.py:141:1: E303 too many blank lines (3)
+solutions/solution.py:141:80: E501 line too long (113 > 79 characters)
+solutions/solution.py:142:80: E501 line too long (115 > 79 characters)
+solutions/solution.py:142:116: W292 no newline at end of file
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+""
+📋 Подробности:

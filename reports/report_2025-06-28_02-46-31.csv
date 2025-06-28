@@ -1,0 +1,65 @@
+message
+🧪 Функциональные тесты
+------------------------------
+❌ Некоторые функциональные тесты не пройдены:
+""
+============================= test session starts =============================
+"platform win32 -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0"
+rootdir: C:\Users\mira1\OneDrive\Документы\Политех\3 курс\6 семестр\Практика\recom_sys_checker
+collected 11 items
+""
+logic\tests\collaborative_tests.py ........Fss
+""
+================================== FAILURES ===================================
+________________________ test_evaluate_precision_at_2 _________________________
+""
+"task_info = {'algorithm': 'k-NN', 'dataset': 'movie_ratings.csv', 'filter_type': 'item_based', 'k': 20, ...}"
+""
+    def test_evaluate_precision_at_2(task_info):
+"        if task_info[""metric""] != ""precision@2"":"
+"            pytest.skip(""Метрика в задании не precision@2"")"
+    
+        train = get_dummy_data(seed=42)
+        solution = load_solution_module()
+        solution.fit(train)
+    
+"        user_id = train[""user_id""].iloc[0]"
+        k = 2
+    
+        test = pd.DataFrame([
+"            {""user_id"": user_id, ""item"": 101, ""rating"": 5},  # релевантный"
+"            {""user_id"": user_id, ""item"": 100, ""rating"": 2},  # не релевантный"
+        ])
+    
+"        recs = solution.recommend(user_id, k=k)"
+    
+        relevant_items = {100}
+        hits = len(set(recs) & relevant_items)
+        expected_precision = hits / k
+    
+        result = solution.evaluate(test)
+    
+"        assert isinstance(result, float)"
+>       assert abs(result - expected_precision) < 0.01
+E       assert 1.7670461673476472 < 0.01
+E        +  where 1.7670461673476472 = abs((1.7670461673476472 - 0.0))
+""
+logic\tests\collaborative_tests.py:155: AssertionError
+=========================== short test summary info ===========================
+FAILED logic/tests/collaborative_tests.py::test_evaluate_precision_at_2 - ass...
+"=================== 1 failed, 8 passed, 2 skipped in 1.30s ===================="
+""
+""
+""
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+solution.py:0:1: E902 FileNotFoundError: [Errno 2] No such file or directory: 'solution.py'
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+""
+📋 Подробности:

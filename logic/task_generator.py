@@ -1,14 +1,20 @@
 import random
-from collaborative import CollaborativeTaskGenerator
-from content_based import generate as generate_content_based
-from hybrid import generate as generate_hybrid
+from logic.task_types.collaborative import CollaborativeTaskGenerator
+# from content_based import ContentBasedTaskGenerator  # на будущее
+# from hybrid import HybridTaskGenerator               # на будущее
 
-class MainTaskGenerator:
-    def __init__(self):
-        self.collab_generator = CollaborativeTaskGenerator()
-        self.task_types = {
-            "collaborative": self.collab_generator.generate_task,
-            "content_based": generate_content_based,
-            "hybrid": generate_hybrid
-        }
-    
+class TaskFactory:
+    GENERATORS = {
+        "collaborative": CollaborativeTaskGenerator,
+        # "content_based": ContentBasedTaskGenerator,
+        # "hybrid": HybridTaskGenerator
+    }
+
+    @staticmethod
+    def generate_description():
+        task_type = random.choice(list(TaskFactory.GENERATORS.keys()))
+        generator_class = TaskFactory.GENERATORS[task_type]
+        generator = generator_class()
+        task_text, task_info = generator.generate_task()
+        task_info["type"] = task_type
+        return task_text, task_info

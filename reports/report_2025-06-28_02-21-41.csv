@@ -1,0 +1,97 @@
+message
+🧪 Функциональные тесты
+------------------------------
+❌ Некоторые функциональные тесты не пройдены:
+""
+============================= test session starts =============================
+"platform win32 -- Python 3.13.5, pytest-8.4.1, pluggy-1.6.0"
+rootdir: C:\Users\mira1\OneDrive\Документы\Политех\3 курс\6 семестр\Практика\recom_sys_checker
+collected 11 items
+""
+logic\tests\collaborative_tests.py ...FFF..s.s
+""
+================================== FAILURES ===================================
+___________________ test_fit_and_recommend_on_generated[1] ____________________
+""
+"task_info = {'algorithm': 'SVD', 'dataset': 'movie_ratings.csv', 'filter_type': 'user_based', 'k': 10, ...}"
+k = 1
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001A08912B680>)
+""
+logic\tests\collaborative_tests.py:78: AssertionError
+___________________ test_fit_and_recommend_on_generated[2] ____________________
+""
+"task_info = {'algorithm': 'SVD', 'dataset': 'movie_ratings.csv', 'filter_type': 'user_based', 'k': 10, ...}"
+k = 2
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001A0891C4820>)
+""
+logic\tests\collaborative_tests.py:78: AssertionError
+___________________ test_fit_and_recommend_on_generated[3] ____________________
+""
+"task_info = {'algorithm': 'SVD', 'dataset': 'movie_ratings.csv', 'filter_type': 'user_based', 'k': 10, ...}"
+k = 3
+""
+"    @pytest.mark.parametrize(""k"", [1, 2, 3])"
+"    def test_fit_and_recommend_on_generated(task_info, k):"
+        solution = load_solution_module()
+        generated_dataset = get_dummy_data()
+    
+        solution.fit(generated_dataset)
+"        user_id = generated_dataset[""user_id""].iloc[0]"
+"        recs = solution.recommend(user_id, k=k)"
+"        assert isinstance(recs, list)"
+">       assert all(isinstance(i, int) for i in recs)"
+E       assert False
+E        +  where False = all(<generator object test_fit_and_recommend_on_generated.<locals>.<genexpr> at 0x000001A0891C5540>)
+""
+logic\tests\collaborative_tests.py:78: AssertionError
+=========================== short test summary info ===========================
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[1]
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[2]
+FAILED logic/tests/collaborative_tests.py::test_fit_and_recommend_on_generated[3]
+"=================== 3 failed, 6 passed, 2 skipped in 1.33s ===================="
+""
+""
+""
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+"solution.py:10:1: E302 expected 2 blank lines, found 1"
+solution.py:31:68: W291 trailing whitespace
+solution.py:32:42: E128 continuation line under-indented for visual indent
+solution.py:32:80: E501 line too long (82 > 79 characters)
+solution.py:65:80: E501 line too long (80 > 79 characters)
+"solution.py:103:1: E302 expected 2 blank lines, found 1"
+"solution.py:121:1: E305 expected 2 blank lines after class or function definition, found 1"
+solution.py:137:69: W292 no newline at end of file
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+""
+📋 Подробности:
