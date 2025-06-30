@@ -9,13 +9,6 @@ from typing import List
 import json
 from sklearn.metrics import mean_squared_error
 
-@pytest.fixture
-def task_info():
-    task_info_str = os.getenv("TASK_INFO")
-    if task_info_str:
-        return json.loads(task_info_str)
-    return None
-
 @pytest.fixture(params=[5, 42, 100, 250])
 def generated_dataset(request):
     return get_dummy_data(seed=request.param)
@@ -65,17 +58,17 @@ def test_fit_runs_without_error():
 @pytest.mark.parametrize("k", [1, 2, 3])
 def test_fit_and_recommend_on_generated(task_info, k, generated_dataset):
     solution = load_solution_module()
-
+    print(f"TASK_INFO: {task_info}")
     solution.fit(generated_dataset)
     user_id = generated_dataset["user_id"].iloc[0]
     recs = solution.recommend(user_id, k=k)
     assert isinstance(recs, list)
-    assert len(recs) == k, (f"""
+    assert len(recs) == k, f"""
         ❌ Тест не пройден:
         Входные данные: {generated_dataset}
         Ожидалось: {k}
         Получено: {len(recs)}
-        """)
+        """
 
     if task_info["filter_type"] == "user_based":
         # Допустим, проверим, что рекомендации разные для разных пользователей
@@ -185,12 +178,12 @@ def test_evaluate_precision_at_2(task_info, generated_dataset):
     result = solution.evaluate(test)
 
     assert isinstance(result, float)
-    assert abs(result - expected_precision) < 0.01, (f"""
+    assert abs(result - expected_precision) < 0.01, f"""
             ❌ Тест не пройден: Сильное расхождение метрики
             Входные данные: {generated_dataset}
             Ожидалось: {expected_precision}
             Получено: {result}
-            """)
+            """
 
 # === Тест RMSE ===
 def test_evaluate_returns_correct_rmse(task_info,generated_dataset):
@@ -211,12 +204,13 @@ def test_evaluate_returns_correct_rmse(task_info,generated_dataset):
         expected_rmse = 0.0
 
     user_score = solution.evaluate(test)
-    assert user_score - expected_rmse > 0.1, (f"""
-            ❌ Тест не пройден: Сильное расхождение метрики
-            Входные данные: {generated_dataset}
-            Ожидалось: {expected_rmse}
-            Получено: {user_score}
-            """)
+    if user_score - expected_rmse <= 0.1:
+        pytest.fail(f"""
+    ❌ Тест не пройден: Сильное расхождение метрики
+    Входные данные: {generated_dataset}
+    Ожидалось: {expected_rmse}
+    Получено: {user_score}
+    """)
 
 # === Тест recall@3 ===
 def test_evaluate_recall_at_3(task_info, generated_dataset):

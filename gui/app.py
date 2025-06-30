@@ -87,7 +87,6 @@ if st.session_state.task_info:
 if st.session_state.uploaded_solution_path:
     if st.button("🚀 Проверить решение"):
         report = service.validate_solution()
-
         csv_path = service.export_report(report)
 
         st.session_state.report_text = report
