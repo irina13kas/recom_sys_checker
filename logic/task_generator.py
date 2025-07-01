@@ -5,8 +5,8 @@ from logic.task_types.content_based import ContentBasedTaskGenerator
 
 class TaskFactory:
     GENERATORS = {
-        "collaborative": CollaborativeTaskGenerator,
-        #"content_based": ContentBasedTaskGenerator,
+        #"collaborative": CollaborativeTaskGenerator,
+        "content_based": ContentBasedTaskGenerator,
         # "hybrid": HybridTaskGenerator
     }
 

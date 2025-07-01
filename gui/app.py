@@ -34,7 +34,14 @@ if st.button("🔄 Сгенерировать задание"):
 # 2. Вывод задания
 if st.session_state.task_text:
     st.markdown("### 📝 Задание")
-    st.markdown(st.session_state.task_text)
+    st.markdown(
+    f"""
+    <div style='height: 600px; width: 1000px; overflow: auto; border: 1px solid #ccc; padding: 10px;'>
+        {st.session_state.task_text}
+    </div>
+    """,
+    unsafe_allow_html=True
+)
     
     with open("template/solution.py", "rb") as f:
         template_bytes = f.read()
@@ -87,10 +94,10 @@ if st.session_state.task_info:
 if st.session_state.uploaded_solution_path:
     if st.button("🚀 Проверить решение"):
         report = service.validate_solution()
-        csv_path = service.export_report(report)
+        #csv_path = service.export_report(report)
 
         st.session_state.report_text = report
-        st.session_state.report_csv_path = csv_path
+        #st.session_state.report_csv_path = csv_path
 
         st.markdown("### 📊 Отчет по решению")
         st.code(report, language="markdown")

@@ -32,7 +32,6 @@ def get_dummy_data(seed=None):
 
     items = list(range(100, 120))
     genres = ['Adventure', 'Comedy','Romance','Children','Fantasy','Drama','Action','Crime','Thriller','Horror','Mystery','Sci-Fi']
-    random_genres = random.sample(genres, k=random.randint(1, 5))
     data = []
 
     for item in items:
