@@ -1,120 +1,56 @@
 import pandas as pd
 import numpy as np
-from scipy.sparse import csr_matrix
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from math import sqrt
 from typing import List
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics import ndcg_score
 
-
-item_similarity = None
-user_item_matrix = None
-items = None
-users = None
+# Глобальные переменные для модели
+tfidf = TfidfVectorizer()
+movie_data = None
+tfidf_matrix = None
+cosine_sim = None
+movie_to_index = {}
 
 def fit(train_data: pd.DataFrame) -> None:
-    """Обучает модель на тренировочном датасете."""
-    # Создаем user-item матрицу
-    global user_item_matrix, item_similarity, users, items
-    users = train_data['user_id'].unique()
-    items = train_data['item'].unique()
+    """
+    Обучает модель на тренировочном датасете
+    train_data - данные для обучения (должен содержать колонки 'movie_id' и 'genres')
+    """
+    global movie_data, tfidf_matrix, cosine_sim, movie_to_index
+    
+    movie_data = train_data.copy()
+    # Преобразуем жанры в строку, разделенную пробелами (если они в формате списка)
+    if isinstance(movie_data['genres'].iloc[0], list):
+        movie_data['genres'] = movie_data['genres'].apply(lambda x: ' '.join(x))
+    
+    # Обучаем TF-IDF на жанрах
+    tfidf_matrix = tfidf.fit_transform(movie_data['genres'])
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+    movie_to_index = {movie_id: idx for idx, movie_id in enumerate(movie_data['movie_id'])}
 
-    # Создаем разреженную матрицу пользователь-фильм
-    user_to_idx = {user: idx for idx, user in enumerate(users)}
-    item_to_idx = {item: idx for idx, item in enumerate(items)}
-
-    rows = train_data['user_id'].map(user_to_idx)
-    cols = train_data['item'].map(item_to_idx)
-    ratings = train_data['rating']
-
-    user_item_matrix = csr_matrix((ratings, (rows, cols)),
-                                        shape=(len(users), len(items)))
-
-    # Вычисляем косинусную схожесть между фильмами (аналог Pearson)
-    item_similarity = cosine_similarity(user_item_matrix.T)
-
-def recommend(user_id: int, k: int) -> List[int]:
-    global user_item_matrix, item_similarity, users, items
-    """Возвращает список из k item_id, рекомендованных пользователю."""
-    if user_id not in users:
+def recommend(movie_id: int, k: int) -> List[int]:
+    """
+    Возвращает список из k фильмов, рекомендованных к просмотру вместе с заданным фильмом
+    movie_id - ID фильма, для которого ищем рекомендации
+    k - количество рекомендаций
+    """
+    if movie_id not in movie_to_index:
         return []
+    
+    idx = movie_to_index[movie_id]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:k+1]  # Исключаем сам фильм
+    movie_indices = [i[0] for i in sim_scores]
+    return movie_data.iloc[movie_indices]['movie_id'].tolist()
 
-    user_idx = np.where(users == user_id)[0][0]
-    user_ratings = user_item_matrix[user_idx].toarray().flatten()
-
-    # Индексы фильмов, которые пользователь еще не оценил
-    unrated_items = np.where(user_ratings == 0)[0]
-
-    if len(unrated_items) == 0:
-        return []
-
-    # Предсказываем рейтинги для неоцененных фильмов
-    pred_ratings = []
-    for item_idx in unrated_items:
-        # Находим индексы фильмов, которые пользователь оценил
-        rated_items = np.where(user_ratings > 0)[0]
-
-        # Берем top-5 наиболее похожих фильмов из оцененных пользователем
-        sim_scores = item_similarity[item_idx, rated_items]
-        top_k_indices = np.argsort(sim_scores)[-5:]
-        top_k_sim = sim_scores[top_k_indices]
-        top_k_ratings = user_ratings[rated_items[top_k_indices]]
-
-        # Взвешенное среднее с учетом схожести
-        if top_k_sim.sum() > 0:
-            pred_rating = np.dot(top_k_sim, top_k_ratings) / top_k_sim.sum()
-        else:
-            pred_rating = 0
-
-        pred_ratings.append((items[item_idx], pred_rating))
-
-    # Сортируем по предсказанному рейтингу и возвращаем top-k
-    pred_ratings.sort(key=lambda x: x[1], reverse=True)
-    return [item for item, _ in pred_ratings[:k]]
-
-def predict(user_id: int, item_id: int) -> float:
-    """Предсказывает рейтинг для пары пользователь-фильм."""
-    global user_item_matrix, item_similarity, users, items
-    if user_id not in users or item_id not in items:
+def evaluate(test_data: pd.DataFrame, relevant_genre: str = 'Crime') -> float:
+    """
+    Оценивает модель на тестовой выборке с помощью NDCG@k
+    test_data - данные для оценки (должен содержать колонку 'movie_id')
+    relevant_genre - жанр, который считается релевантным
+    """
+    if movie_data is None:
         return 0.0
-
-    user_idx = np.where(users == user_id)[0][0]
-    item_idx = np.where(items == item_id)[0][0]
-
-    user_ratings = user_item_matrix[user_idx].toarray().flatten()
-    rated_items = np.where(user_ratings > 0)[0]
-
-    if len(rated_items) == 0:
-        return 0.0
-
-    # Берем top-5 наиболее похожих фильмов из оцененных пользователем
-    sim_scores = item_similarity[item_idx, rated_items]
-    top_k_indices = np.argsort(sim_scores)[-5:]
-    top_k_sim = sim_scores[top_k_indices]
-    top_k_ratings = user_ratings[rated_items[top_k_indices]]
-
-    # Взвешенное среднее с учетом схожести
-    if top_k_sim.sum() > 0:
-        pred_rating = np.dot(top_k_sim, top_k_ratings) / top_k_sim.sum()
-    else:
-        pred_rating = 0.0
-
-    return pred_rating
-
-def evaluate(test_data: pd.DataFrame) -> float:
-    """Оценивает модель на тестовой выборке и возвращает RMSE."""
-    y_true = []
-    y_pred = []
-
-    for _, row in test_data.iterrows():
-        user_id = row['user_id']
-        item_id = row['item']
-        true_rating = row['rating']
-
-        pred_rating = predict(user_id, item_id)
-
-        y_true.append(true_rating)
-        y_pred.append(pred_rating)
-
-    return sqrt(mean_squared_error(y_true, y_pred))
+    

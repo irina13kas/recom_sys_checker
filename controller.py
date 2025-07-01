@@ -24,5 +24,5 @@ class TaskService:
             raise ValueError("Отсутствуют task_info или путь к решению")
         return generate_report(self.task_info)
 
-    def export_report(self, report: str, path: str = None) -> str:
-        return save_report_to_csv(report, path)
+    # def export_report(self, report: str, path: str = None) -> str:
+    #     return save_report_to_csv(report, path)

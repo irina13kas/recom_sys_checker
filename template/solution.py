@@ -19,7 +19,7 @@ from typing import List
 #     """
 
 
-# def evaluate(test_data: pd.DataFrame) -> float:
+#def evaluate(test_data: pd.DataFrame, relevant_rating = 4) -> float:
 #     """
 #       Раскомментируй и пиши код здесь
 #       Оценивает модель на тестовой выборке и возвращает значение метрики (например, RMSE, precision@2).

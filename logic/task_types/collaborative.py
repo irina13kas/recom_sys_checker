@@ -42,7 +42,7 @@ class CollaborativeTaskGenerator:
         def recommend(user_id: int, k: int) -> List[int]:
             \"\"\"Возвращает список из k item_id, рекомендованных пользователю.\"\"\"
 
-        def evaluate(test_data: pd.DataFrame) -> float:
+        def evaluate(test_data: pd.DataFrame, relevant_rating = 4) -> float:
             \"\"\"Оценивает модель на тестовой выборке и возвращает значение метрики (например, RMSE, precision@5).\"\"\"
             
         📎 Условия:

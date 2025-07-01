@@ -95,11 +95,11 @@ if st.session_state.uploaded_solution_path:
         st.markdown("### 📊 Отчет по решению")
         st.code(report, language="markdown")
 
-        if st.session_state.get("report_csv_path"):
-            with open(st.session_state.report_csv_path, "rb") as f:
-                st.download_button(
-                    label="📥 Скачать отчет (.csv)",
-                    data=f.read(),
-                    file_name=Path(st.session_state.report_csv_path).name,
-                    mime="text/csv"
-                )
+        # if st.session_state.get("report_csv_path"):
+        #     with open(st.session_state.report_csv_path, "rb") as f:
+        #         st.download_button(
+        #             label="📥 Скачать отчет (.csv)",
+        #             data=f.read(),
+        #             file_name=Path(st.session_state.report_csv_path).name,
+        #             mime="text/csv"
+        #         )

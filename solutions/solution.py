@@ -114,7 +114,7 @@ def predict(user_id: int, item_id: int) -> float:
     return pred_rating
 
 
-def evaluate(test_data: pd.DataFrame) -> float:
+def evaluate(test_data: pd.DataFrame, relevant_rating = 4) -> float:
     """
       Раскомментируй и пиши код здесь
       Оценивает модель на тестовой выборке и возвращает значение метрики (например, RMSE, precision@2).
