@@ -38,10 +38,10 @@ class ContentBasedTaskGenerator:
             def fit(train_data: pd.DataFrame) -> None:
                 \"\"\"Обучает модель на взаимодействиях и текстовых признаках.\"\"\"
 
-            def recommend(movie_id: int, k: int) -> List[int]:
+            def recommend(movie_id: int, k = 5) -> List[int]:
                 \"\"\"Возвращает список из k фильмов, рекомендованных к просмотру вместе с заданным фильмом movie_id.\"\"\"
 
-            def evaluate(test_data: pd.DataFrame, relevant_genres = ['Crime']) -> float:
+            def evaluate(test_data: pd.DataFrame, relevant_genres = 'Crime') -> float:
                 \"\"\"Оценивает модель на тестовой выборке и возвращает значение метрики (например, precision@5).\"\"\"
 
             📎 Условия:

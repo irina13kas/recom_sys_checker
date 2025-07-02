@@ -58,13 +58,15 @@ def evaluate(test_data: pd.DataFrame, relevant_genres=['Crime']) -> float:
 
     for movie_id in test_data['movie_id']:
         recommended = recommend(movie_id, 5)
-        if not recommended:
+        if len(recommended)==0:
+            print('mmm')
             continue
         hits = sum(1 for rec_id in recommended if rec_id in relevant_movie_ids)
         precision = hits / 5
         precision_scores.append(precision)
-
+    print(precision_scores)
     if not precision_scores:
         return 0.0
 
     return np.mean(precision_scores)
+

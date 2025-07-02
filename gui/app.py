@@ -42,8 +42,8 @@ if st.session_state.task_text:
     """,
     unsafe_allow_html=True
 )
-    
-    with open("template/solution.py", "rb") as f:
+    dir_path = st.session_state.task_info["type"]
+    with open(f"template/{dir_path}/solution.py", "rb") as f:
         template_bytes = f.read()
 
     st.download_button(
@@ -54,7 +54,6 @@ if st.session_state.task_text:
     )
 
     dataset_path = "logic/datasets/" + st.session_state.task_info["dataset"]
-    # Проверяем что файл существует
     if os.path.exists(dataset_path):
         with open(dataset_path, "rb") as f:
             data = f.read()
@@ -77,8 +76,6 @@ if st.session_state.task_info:
 
     if uploaded_file:
         
-        # Можно сохранить файл в сессию или временно на диск
-        # Пример - сохраняем во временный файл:
         save_path = os.path.join("solutions/", uploaded_file.name)
         os.makedirs("solutions", exist_ok=True)
         with open(save_path, "wb") as f:
@@ -94,19 +91,19 @@ if st.session_state.task_info:
 if st.session_state.uploaded_solution_path:
     if st.button("🚀 Проверить решение"):
         report = service.validate_solution()
-        #csv_path = service.export_report(report)
+        csv_path = service.export_report(report)
 
         st.session_state.report_text = report
-        #st.session_state.report_csv_path = csv_path
+        st.session_state.report_csv_path = csv_path
 
         st.markdown("### 📊 Отчет по решению")
         st.code(report, language="markdown")
 
-        # if st.session_state.get("report_csv_path"):
-        #     with open(st.session_state.report_csv_path, "rb") as f:
-        #         st.download_button(
-        #             label="📥 Скачать отчет (.csv)",
-        #             data=f.read(),
-        #             file_name=Path(st.session_state.report_csv_path).name,
-        #             mime="text/csv"
-        #         )
+        if st.session_state.get("report_csv_path"):
+            with open(st.session_state.report_csv_path, "rb") as f:
+                st.download_button(
+                    label="📥 Скачать отчет (.csv)",
+                    data=f.read(),
+                    file_name=Path(st.session_state.report_csv_path).name,
+                    mime="text/csv"
+                )

@@ -1,6 +1,6 @@
 from logic.validator import generate_report
 from logic.task_generator import TaskFactory
-from report_csv import save_report_to_csv  # если используется
+from report_csv import save_report_to_csv 
 
 class TaskService:
     def __init__(self):
@@ -13,7 +13,6 @@ class TaskService:
         return self.task_text, self.task_info
 
     def upload_solution(self, uploaded_file):
-        # Сохраняем файл как solution.py
         with open("solutions/solution.py", "wb") as f:
             f.write(uploaded_file.read())
         self.solution_path = "solutions/solution.py"
@@ -24,5 +23,5 @@ class TaskService:
             raise ValueError("Отсутствуют task_info или путь к решению")
         return generate_report(self.task_info)
 
-    # def export_report(self, report: str, path: str = None) -> str:
-    #     return save_report_to_csv(report, path)
+    def export_report(self, report: str, path: str = None) -> str:
+        return save_report_to_csv(report, path)

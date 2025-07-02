@@ -12,7 +12,8 @@ def run_pytest(task_info: Dict) -> str:
     """
     test_file_map = {
         "collaborative": "logic/tests/collaborative_tests.py",
-        "content_based": "logic/tests/content_based_tests.py"
+        "content_based": "logic/tests/content_based_tests.py",
+        "hybrid": "logic/tests/hybrid_tests.py"
     }
 
     test_file = test_file_map.get(task_info["type"])

@@ -4,3 +4,4 @@ black
 pandas
 scikit-learn
 streamlit
+scikit-surprise

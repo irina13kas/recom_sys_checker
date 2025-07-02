@@ -1,13 +1,13 @@
 import random
 from logic.task_types.collaborative import CollaborativeTaskGenerator
 from logic.task_types.content_based import ContentBasedTaskGenerator
-# from hybrid import HybridTaskGenerator               # на будущее
+from logic.task_types.hybrid import HybridTaskGenerator               
 
 class TaskFactory:
     GENERATORS = {
-        #"collaborative": CollaborativeTaskGenerator,
+        "collaborative": CollaborativeTaskGenerator,
         "content_based": ContentBasedTaskGenerator,
-        # "hybrid": HybridTaskGenerator
+        "hybrid": HybridTaskGenerator
     }
 
     @staticmethod

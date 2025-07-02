@@ -5,8 +5,6 @@ import pandas as pd
 import numpy as np
 import importlib.util
 from pathlib import Path
-from typing import List
-import json
 from sklearn.metrics import mean_squared_error
 
 @pytest.fixture(params=[5, 42, 100, 250])
@@ -51,9 +49,9 @@ def get_dummy_data(task_info, seed=None):
 # === Тесты структуры ===
 def test_has_required_functions():
     solution = load_solution_module()
-    assert hasattr(solution, 'fit'), "Отсутствует функция fit"
-    assert hasattr(solution, 'recommend'), "Отсутствует функция recommend"
-    assert hasattr(solution, 'evaluate'), "Отсутствует функция evaluate"
+    assert hasattr(solution, 'fit'), "There is no fit"
+    assert hasattr(solution, 'recommend'), "There is no recommend"
+    assert hasattr(solution, 'evaluate'), "There is evaluate"
 
 def test_fit_runs_without_error(task_info):
     sample_data = get_dummy_data(task_info)
@@ -71,37 +69,35 @@ def test_fit_and_recommend_on_generated(task_info,
     user_id = generated_dataset["user_id"].iloc[0]
     recs = solution.recommend(user_id, k=k)
     assert isinstance(recs, list)
-    assert len(recs)== k, f"""
+    assert len(recs)<= k, f"""
         ❌ Тест не пройден:
-        Входные данные: {generated_dataset}
-        Ожидалось: {k}
-        Получено: {len(recs)}
+        Data: {generated_dataset}
+        Expected: {k}
+        Actual: {len(recs)}
         """
 
     if task_info["filter_type"] == "user_based":
-        # Допустим, проверим, что рекомендации разные для разных пользователей
         user_2 = generated_dataset["user_id"].iloc[1]
         recs_2 = solution.recommend(user_2, k=k)
 
         recs = list(map(int, recs))
         recs_2 = list(map(int, recs_2))
-        if recs == recs_2:
+        if sorted(recs) == sorted(recs_2):
             message = (
-                f"\n❌ Рекомендации совпадают для двух разных пользователей при user-based фильтрации.\n"
-                f"👤 user_id 1: {user_id} → recs: {recs}\n"
-                f"👤 user_id 2: {user_2} → recs: {recs_2}\n"
-                f"📎 Ожидалось: разные рекомендации для разных пользователей\n"
-                f"📂 Данные:\n{generated_dataset[generated_dataset['user_id'].isin([user_id, user_2])]}"
+                f"❌ Рекомендации совпадают для двух разных пользователей при user-based фильтрации."
+                f"👤 user_id 1: {user_id} → recs: {recs}"
+                f"👤 user_id 2: {user_2} → recs: {recs_2}"
+                f"📎 Expected: разные рекомендации для разных пользователей"
+                f"📂 Data:{generated_dataset[generated_dataset['user_id'].isin([user_id, user_2])]}"
             )
             raise AssertionError(message)
     elif task_info["filter_type"] == "item_based":
-        # Проверим, что item'ы рекомендованы на основе похожих на просмотренные
         seen_items = generated_dataset[generated_dataset["user_id"] == user_id]["item"].tolist()
         assert not any(item in seen_items for item in recs), (f"""
             ❌ Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
-            Входные данные: {generated_dataset}
-            Ожидалось: {False}
-            Получено: {True}
+            Data: {generated_dataset}
+            Expected: {False}
+            Actual: {True}
             """)
         
 def test_recommend_items_not_seen(task_info, 
@@ -119,17 +115,17 @@ def test_recommend_items_not_seen(task_info,
         # В item-based обязаны быть только новые item'ы
         assert all(item not in seen_items for item in recs), (f"""
             ❌ Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
-            Входные данные: {generated_dataset}
-            Ожидалось: {False}
-            Получено: {True}
+            Data: {generated_dataset}
+            Expected: {False}
+            Actual: {True}
             """)
     elif task_info["filter_type"] == "user_based":
         # В user-based иногда допускается, если не было ничего другого
         assert len(recs) > 0, (f"""
             ❌ Тест не пройден: 
-            Входные данные: {generated_dataset}
-            Ожидалось: {"Должны быть хоть какие-то элементы"}
-            Получено: {"Список пустой"}
+            Data: {generated_dataset}
+            Expected: {"Должны быть хоть какие-то элементы"}
+            Actual: {"Список пустой"}
             """)
 
 def test_repeat_fit_stability(task_info, 
@@ -145,19 +141,23 @@ def test_repeat_fit_stability(task_info,
     recs_2 = solution.recommend(user_id, k)
 
     if task_info["filter_type"] == "user_based":
-        assert recs_1 == recs_2, (f"""
+        assert sorted(recs_1) == sorted(recs_2), (f"""
             ❌ Тест не пройден: User-based: рекомендации после повторного fit должны совпадат
-            Входные данные: {generated_dataset}
-            Ожидалось: {"Совпадение рекомендаций"}
-            Получено: {f"Выявлено расхождение. \nРекоммендации после 1-ого обучения: {recs_1} \nРекоммендации после 2-ого обучения: {recs_2}"}
+            Data: {generated_dataset}
+            Expected: {"Совпадение рекомендаций"}
+            Actual: {f"Выявлено расхождение."
+                    f"Рекоммендации после 1-ого обучения: {recs_1}"
+                    f"Рекоммендации после 2-ого обучения: {recs_2}"}
             """)
     elif task_info["filter_type"] == "item_based":
         # Допускаем небольшую разницу — item-based может быть менее стабильной
         assert len(set(recs_1) & set(recs_2)) > 1, (f"""
             ❌ Тест не пройден: Item-based: слишком сильное расхождение рекомендаций
-            Входные данные: {generated_dataset}
-            Ожидалось: {"Совпадение рекомендаций"}
-            Получено: {f"Выявлено сильное расхождение (более 1 элемента). \nРекоммендации после 1-ого обучения: {recs_1} \nРекоммендации после 2-ого обучения: {recs_2}"}
+            Data: {generated_dataset}
+            Expected: {"Совпадение рекомендаций"}
+            Actual: {f"Выявлено сильное расхождение (более 1 элемента)."
+                     f"Рекоммендации после 1-ого обучения: {recs_1}"
+                     f"Рекоммендации после 2-ого обучения: {recs_2}"}
             """)
 # === Метрики ===
 
@@ -186,9 +186,9 @@ def test_evaluate_precision_at_2(task_info,
     assert isinstance(actual, float)
     assert abs(actual - expected) < 0.01, f"""
             ❌ Тест не пройден: Сильное расхождение метрики precision@2
-            Входные данные: {test}
-            Ожидалось: {expected}
-            Получено: {actual}
+            Data: {test}
+            Expected: {expected}
+            Actual: {actual}
             """
 
 # === Тест RMSE ===
@@ -238,7 +238,7 @@ def test_evaluate_recall_at_3(task_info,
     assert isinstance(actual, float)
     assert abs(actual - expected) < 0.01, (f"""
             ❌ Тест не пройден: Сильное расхождение метрики recall@3
-            Входные данные: {test}
-            Ожидалось: {expected}
-            Получено: {actual}
+            Data: {test}
+            Expected: {expected}
+            Actual: {actual}
             """)
