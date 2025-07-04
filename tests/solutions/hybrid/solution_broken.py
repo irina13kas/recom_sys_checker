@@ -1,5 +1,3 @@
-# solution.py
-
 import pandas as pd
 import numpy as np
 from typing import List
@@ -7,7 +5,6 @@ from surprise import Dataset, Reader, SVD
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Глобальные переменные для хранения моделей и матриц
 collab_model = None
 user_item_matrix = None
 content_matrix = None
@@ -42,29 +39,7 @@ def fit(train_data: pd.DataFrame) -> None:
 
 
 def recommend(user_id: int, k=5) -> List[int]:
-    global collab_model, content_matrix, product_ids, train_df
-
-    # Список всех продуктов
-    all_products = set(product_ids)
-    rated_products = set(train_df[train_df['user_id'] == user_id]['product_id'])
-    unseen_products = list(all_products - rated_products)
-
-    if not unseen_products:
-        return []
-
-    # Предсказания для всех непросмотренных товаров
-    preds = []
-    for pid in unseen_products:
-        try:
-            pred = collab_model.predict(user_id, pid).est
-            preds.append((pid, pred))
-        except:
-            continue
-
-    # Топ-k по рейтингу
-    preds = sorted(preds, key=lambda x: x[1], reverse=True)[:k]
-
-    return [pid for pid, _ in preds]
+    return []
 
 
 def evaluate(test_data: pd.DataFrame, relevant_rating=4, brand='Gucci') -> float:
@@ -82,7 +57,6 @@ def evaluate(test_data: pd.DataFrame, relevant_rating=4, brand='Gucci') -> float
 
         recommended = recommend(user, k=5)
 
-        # Сравниваем пересечение с актуальными
         hit_count = len(set(actual_items) & set(recommended))
         hits += hit_count
         total += 1
@@ -90,10 +64,3 @@ def evaluate(test_data: pd.DataFrame, relevant_rating=4, brand='Gucci') -> float
     if total == 0:
         return 0.0
     return hits / total  # precision@5
-# Пример использования:
-# df = pd.read_csv('fashion_products.csv')
-# train = df.sample(frac=0.8, random_state=42)
-# test = df.drop(train.index)
-# fit(train)
-# print(recommend(19))
-# print(evaluate(test))

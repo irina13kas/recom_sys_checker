@@ -7,5 +7,6 @@ def pytest_addoption(parser):
 @pytest.fixture
 def task_info(request):
     path = request.config.getoption("--task_info_path")
-    with open(path, "r") as f:
-        return json.load(f)
+    if path is not None:
+        with open(path, "r") as f:
+            return json.load(f)

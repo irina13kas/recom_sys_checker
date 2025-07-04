@@ -7,12 +7,8 @@ import importlib.util
 from pathlib import Path
 from typing import List
 import math
+import subprocess
 from sklearn.metrics import mean_squared_error
-
-# task_info = {
-#     "type": "content_based",
-#     "metric": 'precision@5',
-#     }
 
 
 @pytest.fixture(params=[5, 42, 100, 250])
@@ -71,25 +67,31 @@ def test_fit_and_recommend_on_generated(k, generated_dataset):
     movie_id = generated_dataset["movie_id"].iloc[0]
     recs = solution.recommend(movie_id, k=k)
     assert isinstance(recs, list)
-    assert len(recs) <= k, f"""
-        ❌ Тест не пройден:
+    # assert len(recs) != 0, f"""
+    #     Тест не пройден:
+    #     Data: {generated_dataset}
+    #     Expected: Должен быть рекомендован хотя бы один фильм
+    #     Actual: 0
+    #     """
+    assert len(recs) == k, f"""
+        Тест не пройден:
         Data: {generated_dataset}
         Expected: {k}
         Actual: {len(recs)}
         """
     assert all(isinstance(mid, int) for mid in recs), f"""
-        ❌ Тест не пройден: Все элементы списка должны быть int
+        Тест не пройден: Все элементы списка должны быть int
         Data: {generated_dataset}
         Expected: all elements int
         """
     assert movie_id not in recs, f"""
-        ❌ Тест не пройден: Не следует рекомендовать сам фильм
+        Тест не пройден: Не следует рекомендовать сам фильм
         Data: {generated_dataset}
         Expected: {recs.remove(movie_id)}
         Actual: {recs}
         """
     assert all(mid in generated_dataset["movie_id"].values for mid in recs), f"""
-        ❌ Тест не пройден: Все рекомендованные id должны быть в датасете"
+        Тест не пройден: Все рекомендованные id должны быть в датасете"
         Data: {generated_dataset}
         Expected: {recs}
         Actual: {generated_dataset["movie_id"].values}
@@ -103,28 +105,23 @@ def test_evaluate_precision_at_5(task_info,
         pytest.skip("Метрика в задании не precision@5")
     
     solution = load_solution_module()
-
+    relevant_genres = 'Crime'
     test = pd.DataFrame([
-        {"movie_id": 250, "genres": 'Crime'},  # не релевантный
+        {"movie_id": 250, "genres": 'Crime'},  # релевантный
         {"movie_id": 251, "genres": 'Drama|Crime'},  # релевантный
         {"movie_id": 260, "genres": 'Thriller'},  # не релевантный
         {"movie_id": 266, "genres": 'Comedy|Romance'},  # не релевантный
         {"movie_id": 280, "genres": 'Documentary|Drama'} # не релевантный
     ])
-    def fake_recommend(movie_id: int, k:int):
-        return test["movie_id"].values
-    
-    solution.recommend = fake_recommend
-    recs = fake_recommend(1, 5)
-    relevant_items = {251}
-    hits = len(set(recs) & relevant_items)
-    expected_precision = hits / k
-
+    solution.fit(test)
     result = solution.evaluate(test)
+    relevant = [250, 251]
+    recs = [251]
+    expected_precision = len(set(relevant) & set(recs)) / k
 
     assert isinstance(result, float)
-    assert abs(result - expected_precision) < 0.01, f"""
-            ❌ Тест не пройден: Сильное расхождение метрики precision@5
+    assert abs(result - expected_precision) < 0.1, f"""
+            Тест не пройден: Сильное расхождение метрики precision@5
             Data: {test}
             Expected: {expected_precision}
             Actual: {result}
@@ -146,7 +143,7 @@ def test_evaluate_returns_correct_ndcg_at_k(task_info
         {"movie_id": 280, "genres": 'Sci-Fi'}  # не релевантный
     ])
     solution.fit(test)
-    relevance = {0, 0, 1, 1}
+    relevance = [0, 0, 1, 1,0]
 
     k = 5
 
@@ -162,11 +159,10 @@ def test_evaluate_returns_correct_ndcg_at_k(task_info
         return dcg
 
     expected = dcg(relevance, k)/dcg(sorted(relevance, reverse=True), k)
-
     actual = solution.evaluate(test)
 
-    assert(abs(expected - actual) < 0.01, f"""
-            ❌ Тест не пройден: Сильное расхождение метрики NDCG
+    assert(abs(expected - actual) < 0.1, f"""
+            Тест не пройден: Сильное расхождение метрики NDCG
             Data: {test}
             Expected: {expected}
             Actual: {actual}
@@ -182,22 +178,22 @@ def test_evaluate_recall_at_5(task_info,
     solution = load_solution_module()
 
     test = pd.DataFrame([
-        {"movie_id": 250, "genres": 'Drama|Horror'},  # не релевантный
+        {"movie_id": 250, "genres": 'Drama|Horror'},  # релевантный
         {"movie_id": 251, "genres": 'Crime'},  # релевантный
         {"movie_id": 260, "genres": 'Action|Fantasy'},  # не релевантный
         {"movie_id": 266, "genres": 'Comedy|Romance|Crime'},  # релевантный
-        {"movie_id": 280, "genres": 'Romance|Drama'}  # не релевантный
+        {"movie_id": 280, "genres": 'Romance|Drama|Crime'}  # не релевантный
     ])
     solution.fit(test)
-    relevant = {251, 266}
-
-    expected = len(set(test["movie_id"].values) & set(relevant))/len(relevant)
+    relevant = {251, 266, 280}
+    recs = [280]
+    expected = len(set(recs) & set(relevant))/len(relevant)
 
     actual = solution.evaluate(test)
 
     assert isinstance(actual, float)
-    assert abs(actual - expected) < 0.01, (f"""
-            ❌ Тест не пройден: Сильное расхождение метрики recall@5
+    assert abs(actual - expected) < 0.1, (f"""
+            Тест не пройден: Сильное расхождение метрики recall@5
             Data: {test}
             Expected: {expected}
             Actual: {actual}

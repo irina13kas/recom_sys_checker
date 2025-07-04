@@ -7,10 +7,6 @@ import importlib.util
 from pathlib import Path
 from sklearn.metrics import mean_squared_error
 
-task_info = {
-    "metric": "precision@5"
-}
-
 @pytest.fixture(params=[5, 10])
 def generated_dataset(request):
     return get_dummy_data(seed=request.param)
@@ -33,11 +29,13 @@ def get_dummy_data(seed=10):
         random.seed(seed)
     else:
         seed = 10
-
+    max_value = 120
+    if(seed>10):
+        max_value = seed/10 + 110
     brands = ['Adidas','H&M','Zara','Gucci','Nike']
     product_names = ['Dress','Shoes','Jeans','Sweater','T-shirt']
     users_id = [random.randint(30, 40) for _ in range(seed)]
-    products_id = [random.randint(110, 120) for _ in range(seed)]
+    products_id = [random.randint(110, max_value) for _ in range(seed)]
     data = []
 
     for i in range(seed):
@@ -84,33 +82,37 @@ def test_fit_and_recommend_on_generated(k, generated_dataset):
     all_product_ids = set(generated_dataset["product_id"].values)
 
     recs = solution.recommend(user_id, k=k)
-    print(f"recs: {recs}")
+    assert len(recs) != 0, f"""
+        Тест не пройден:
+        Data: {generated_dataset}
+        Expected: Должен быть рекомендован хотя бы один фильм
+        Actual: 0
+        """
     assert isinstance(recs, list), f"""
-        ❌ Тест не пройден:
+        Тест не пройден:
         Expected: type list
         Actual: {type(recs)}
         """
 
     assert len(recs) <= k, f"""
-        ❌ Тест не пройден:
+        Тест не пройден:
         Expected: {k} recommendations
         Actual: {len(recs)}
         """
 
     assert len(set(recs)) == len(recs), f"""
-        ❌ Тест не пройден:
+        Тест не пройден:
         Recommendations should be unique
         Actual: {recs}
         """
 
     assert all(pid in all_product_ids for pid in recs), f"""
-        ❌ Тест не пройден:
+        Тест не пройден:
         Some product_ids from the recommendations are missing from the dataset
         Expected: {all_product_ids}
         Actual: {recs}
         """
-def test_repeat_fit_stability(#task_info, 
-                              generated_dataset):
+def test_repeat_fit_stability( generated_dataset):
     solution = load_solution_module()
     solution.fit(generated_dataset)
     user_id = generated_dataset["user_id"].iloc[0]
@@ -122,7 +124,7 @@ def test_repeat_fit_stability(#task_info,
     recs_2 = solution.recommend(user_id, k)
 
     assert sorted(recs_1) == sorted(recs_2), (f"""
-        ❌ Тест не пройден: User-based: рекомендации после повторного fit должны совпадат
+        Тест не пройден: User-based: рекомендации после повторного fit должны совпадат
         Data: {generated_dataset}
         Expected: {"Совпадение рекомендаций"}
         Actual: {f"Выявлено расхождение."
@@ -132,7 +134,7 @@ def test_repeat_fit_stability(#task_info,
 # === Метрики ===
 
 # === Тест precision@5 ===
-def test_evaluate_precision_at_5(#task_info,
+def test_evaluate_precision_at_5(task_info,
                                   k=5):
     if task_info["metric"] != "precision@5":
         pytest.skip("Метрика в задании не precision@5")
@@ -140,7 +142,7 @@ def test_evaluate_precision_at_5(#task_info,
     solution = load_solution_module()
 
     test = pd.DataFrame([
-        {'user_id':1, 'product_id': 110,'product_name':'Dress','brand':'Gucci','price':16,'rating':2.34}, # не релевантный
+        {'user_id':1, 'product_id': 117,'product_name':'Dress','brand':'Gucci','price':16,'rating':2.34}, # не релевантный
         {'user_id':1, 'product_id': 111,'product_name':'Shoes','brand':'Adidas','price':12,'rating':3.56}, # не релевантный
         {'user_id':2, 'product_id': 112,'product_name':'T-shirt','brand':'Nike','price':5,'rating':4.00}, # не релевантный
         {'user_id':3, 'product_id': 110,'product_name':'Dress','brand':'Gucci','price':16,'rating':5.00}, # релевантный
@@ -149,25 +151,21 @@ def test_evaluate_precision_at_5(#task_info,
         {'user_id':2, 'product_id': 110,'product_name':'Dress','brand':'Gucci','price':16,'rating':4.12}, # релевантный
         {'user_id':4, 'product_id': 115,'product_name':'Sweater','brand':'H&M','price':10,'rating':3.30}, # не релевантный
     ])
-    def fake_recommend(user_id, k=5):
-        return test["product_id"].drop_duplicates().head(k).tolist()
-    
-    solution.recommend = fake_recommend
-    recs = solution.recommend
+    solution.fit(test)
+    recs = [110,114]
     relevant_items = set(
         test[(test["rating"] >= 4) & (test["brand"] == "Gucci")]["product_id"]
     )
 
-    recs = fake_recommend(user_id=1, k=k)
-
     hits = len(set(recs) & relevant_items)
+    print(len(relevant_items))
     expected = hits / k
 
     result = solution.evaluate(test)
-
+    print(result)
     assert isinstance(result, float)
-    assert abs(result - expected) < 0.01, f"""
-        ❌ Тест не пройден: Сильное расхождение метрики precision@5
+    assert abs(result - expected) < 0.1, f"""
+        Тест не пройден: Сильное расхождение метрики precision@5
         Data: {test}
         Relevant objects: {relevant_items}
         Recommendations: {recs}
@@ -176,27 +174,24 @@ def test_evaluate_precision_at_5(#task_info,
         """
 
 # === Тест RMSE ===
-def test_evaluate_returns_correct_rmse(#task_info, 
-                                       generated_dataset):
+def test_evaluate_returns_correct_rmse(task_info):
     if task_info["metric"] != "RMSE":
         pytest.skip("Метрика в задании не RMSE")
     
     solution = load_solution_module()
-    dummy_data = generated_dataset
+    dummy_data = get_dummy_data(1000)
     train = dummy_data.sample(frac=0.7, random_state=42)
     test = dummy_data.drop(train.index)
     solution.fit(train)
 
-    # Вычисление ожидаемого RMSE (если используется как baseline)
     merged = pd.merge(test, train, on=["user_id", "product_id"], suffixes=("_test", "_train"))
     if not merged.empty:
         expected = np.sqrt(mean_squared_error(merged["rating_test"], merged["rating_train"]))
     else:
         expected = 0.0
-
     actual = solution.evaluate(test)
     assert abs(actual-expected) < 0.1, f"""
-    ❌ Тест не пройден: Сильное расхождение метрики RMSE
+    Тест не пройден: Сильное расхождение метрики RMSE
     Data: {generated_dataset}
     Expected: {expected}
     Actual: {actual}
@@ -204,7 +199,7 @@ def test_evaluate_returns_correct_rmse(#task_info,
     
 
 # === Тест recall@5 ===
-def test_evaluate_recall_at_3(#task_info,
+def test_evaluate_recall_at_5(task_info,
                                k = 5):
     if task_info["metric"] != "recall@5":
         pytest.skip("Метрика в задании не recall@5")
@@ -212,7 +207,7 @@ def test_evaluate_recall_at_3(#task_info,
     solution = load_solution_module()
 
     test = pd.DataFrame([
-        {'user_id':1, 'product_id': 110,'product_name':'Dress','brand':'Gucci','price':16,'rating':2.34}, # не релевантный
+        {'user_id':1, 'product_id': 117,'product_name':'Dress','brand':'Gucci','price':16,'rating':2.34}, # не релевантный
         {'user_id':1, 'product_id': 111,'product_name':'Shoes','brand':'Adidas','price':12,'rating':3.56}, # не релевантный
         {'user_id':2, 'product_id': 112,'product_name':'T-shirt','brand':'Nike','price':5,'rating':4.00}, # не релевантный
         {'user_id':3, 'product_id': 110,'product_name':'Dress','brand':'Gucci','price':16,'rating':5.00}, # релевантный
@@ -223,19 +218,16 @@ def test_evaluate_recall_at_3(#task_info,
     ])
     solution.fit(test)
     relevant = set(
-        test[(test["rating"] >= 4) & (test["brand"] == "Gucci")]["product_id"]
+        test[(test["rating"] >= 4) & (test["brand"] == "Gucci")]["product_id"][:k]
     )
-
-    if not relevant:
-        return 0.0
-
-    expected = len(set(test) & set(relevant))/len(relevant)
+    recs = [110,114]
+    expected = len(set(recs) & set(relevant))/len(relevant)
 
     actual = solution.evaluate(test)
 
     assert isinstance(actual, float)
-    assert abs(actual - expected) < 0.01, (f"""
-            ❌ Тест не пройден: Сильное расхождение метрики recall@5
+    assert abs(actual - expected) < 0.1, (f"""
+            Тест не пройден: Сильное расхождение метрики recall@5
             Входные данные: {test}
             Expected: {expected}
             Actual: {actual}

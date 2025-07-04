@@ -1,0 +1,130 @@
+message
+🧪 Функциональные тесты
+------------------------------
+❌ Тесты не пройдены. Подробности:
+        Expected: {expected}
+AssertionError: 
+      Ð¢ÐµÑÑ Ð½Ðµ Ð¿ÑÐ¾Ð¹Ð´ÐµÐ½: Ð¡Ð¸Ð»ÑÐ½Ð¾Ðµ ÑÐ°ÑÑÐ¾Ð¶Ð´ÐµÐ½Ð¸Ðµ Ð¼ÐµÑÑÐ¸ÐºÐ¸ RMSE
+      Data: <pytest_fixture(<function generated_dataset at 0x000002B2BEE804A0>)>
+      Expected: 1.6196403193142908
+      Actual: 0.18181818181818182
+      
+assert 1.4378221374961089 < 0.1
+ +  where 1.4378221374961089 = abs((0.18181818181818182 - 1.6196403193142908))
+""
+🎨 Стиль кода (flake8)
+------------------------------
+❌ flake8: Найдены проблемы со стилем:
+solutions/solution.py:4:1: F401 'numpy as np' imported but unused
+solutions/solution.py:8:1: F401 'sklearn.metrics.pairwise.cosine_similarity' imported but unused
+solutions/solution.py:22:5: F824 `global user_item_matrix` is unused: name is never assigned in scope
+solutions/solution.py:22:80: E501 line too long (115 > 79 characters)
+solutions/solution.py:25:80: E501 line too long (85 > 79 characters)
+solutions/solution.py:28:80: E501 line too long (80 > 79 characters)
+solutions/solution.py:29:80: E501 line too long (86 > 79 characters)
+solutions/solution.py:37:80: E501 line too long (104 > 79 characters)
+solutions/solution.py:45:5: F824 `global collab_model` is unused: name is never assigned in scope
+solutions/solution.py:45:5: F824 `global content_matrix` is unused: name is never assigned in scope
+solutions/solution.py:45:5: F824 `global product_ids` is unused: name is never assigned in scope
+solutions/solution.py:45:5: F824 `global train_df` is unused: name is never assigned in scope
+solutions/solution.py:49:80: E501 line too long (80 > 79 characters)
+solutions/solution.py:61:9: E722 do not use bare 'except'
+solutions/solution.py:70:80: E501 line too long (81 > 79 characters)
+solutions/solution.py:77:65: W504 line break after binary operator
+solutions/solution.py:78:75: W504 line break after binary operator
+solutions/solution.py:79:80: E501 line too long (86 > 79 characters)
+""
+""
+🧱 Форматирование кода (black)
+------------------------------
+❌ black: Форматирование отличается от стандарта black.
+""
+📋 Подробности:
+uYTYT^ --- solutions\solution.py	2025-07-04 21:07:14.568060+00:00
++++ solutions\solution.py	2025-07-04 21:07:16.977579+00:00
+"@@ -20,35 +20,37 @@"
+ 
+ def fit(train_data: pd.DataFrame) -> None:
+"     global collab_model, user_item_matrix, content_matrix, item_ids, product_ids, vectorizer, train_df, products_df"
+ 
+     train_df = train_data.copy()
+"-    products_df = train_df[['product_id', 'product_name', 'brand']].drop_duplicates()"
+"+    products_df = train_df[[""product_id"", ""product_name"", ""brand""]].drop_duplicates()"
+ 
+     # --- Коллаборативная часть (SVD как ALS-альтернатива) ---
+"     reader = Reader(rating_scale=(train_df.rating.min(), train_df.rating.max()))"
+"-    data = Dataset.load_from_df(train_df[['user_id', 'product_id', 'rating']], reader)"
+"+    data = Dataset.load_from_df(train_df[[""user_id"", ""product_id"", ""rating""]], reader)"
+     trainset = data.build_full_trainset()
+ 
+     model = SVD()
+     model.fit(trainset)
+     collab_model = model
+ 
+     # --- Контентная часть ---
+-    products_df['text'] = products_df['product_name'].fillna('') + ' ' + products_df['brand'].fillna('')
+"+    products_df[""text""] = ("
+"+        products_df[""product_name""].fillna("""") + "" "" + products_df[""brand""].fillna("""")"
++    )
+     vectorizer = CountVectorizer()
+-    content_matrix = vectorizer.fit_transform(products_df['text'])
+-    item_ids = products_df['product_id'].tolist()
+-    product_ids = products_df['product_id'].values
+"+    content_matrix = vectorizer.fit_transform(products_df[""text""])"
+"+    item_ids = products_df[""product_id""].tolist()"
+"+    product_ids = products_df[""product_id""].values"
+ 
+ 
+" def recommend(user_id: int, k=5) -> List[int]:"
+"     global collab_model, content_matrix, product_ids, train_df"
+ 
+     # Список всех продуктов
+     all_products = set(product_ids)
+-    rated_products = set(train_df[train_df['user_id'] == user_id]['product_id'])
+"+    rated_products = set(train_df[train_df[""user_id""] == user_id][""product_id""])"
+     unseen_products = list(all_products - rated_products)
+ 
+     if not unseen_products:
+         return []
+ 
+"@@ -65,20 +67,22 @@"
+"     preds = sorted(preds, key=lambda x: x[1], reverse=True)[:k]"
+ 
+"     return [pid for pid, _ in preds]"
+ 
+ 
+"-def evaluate(test_data: pd.DataFrame, relevant_rating=4, brand='Gucci') -> float:"
+"+def evaluate(test_data: pd.DataFrame, relevant_rating=4, brand=""Gucci"") -> float:"
+     hits = 0
+     total = 0
+ 
+-    test_users = test_data['user_id'].unique()
+"+    test_users = test_data[""user_id""].unique()"
+ 
+     for user in test_users:
+-        actual_items = test_data[(test_data['user_id'] == user) &
+-                                 (test_data['rating'] >= relevant_rating) &
+-                                 (test_data['brand'] == brand)]['product_id'].tolist()
++        actual_items = test_data[
+"+            (test_data[""user_id""] == user)"
+"+            & (test_data[""rating""] >= relevant_rating)"
+"+            & (test_data[""brand""] == brand)"
+"+        ][""product_id""].tolist()"
+         if not actual_items:
+             continue
+ 
+"         recommended = recommend(user, k=5)"
+ 
+"@@ -88,10 +92,12 @@"
+         total += 1
+ 
+     if total == 0:
+         return 0.0
+     return hits / total  # precision@5
++
++
+ # Пример использования:
+ # df = pd.read_csv('fashion_products.csv')
+" # train = df.sample(frac=0.8, random_state=42)"
+ # test = df.drop(train.index)
+ # fit(train)

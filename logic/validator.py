@@ -1,5 +1,4 @@
 import subprocess
-import sys
 import os
 import json
 import tempfile
@@ -22,13 +21,11 @@ def run_pytest(task_info: Dict) -> str:
         temp_path = temp_file.name
 
     try:
-        # Запускаем pytest и получаем stdout/stderr
         result = subprocess.run(
             ["pytest", test_file, f"--task_info_path={temp_path}"],
             capture_output=True,
             text=True
         )
-        #print(result)
         error_lines = [
             line[8:] if line.startswith("E       ") else line
             for line in result.stdout.splitlines() + result.stderr.splitlines()

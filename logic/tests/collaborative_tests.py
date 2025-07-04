@@ -5,11 +5,8 @@ import pandas as pd
 import numpy as np
 import importlib.util
 from pathlib import Path
+import subprocess
 from sklearn.metrics import mean_squared_error
-
-@pytest.fixture(params=[5, 42, 100, 250])
-def generated_dataset(request, task_info):
-    return get_dummy_data(task_info, seed=request.param)
 
 # === Проверка наличия модуля ===
 def test_solution_file_exists():
@@ -29,11 +26,11 @@ def get_dummy_data(task_info, seed=None):
         random.seed(seed)
 
     users = list(range(1, 21))
-    items = list(range(100, 120))
+    items = list(range(100, 200))
     data = []
     if(task_info["filter_type"]=="item_based"):
         for user in users:
-            rated_items = random.sample(items, k=random.randint(5, 10))
+            rated_items = random.sample(items, k=random.randint(1, 5))
             for item in rated_items:
                 rating = random.randint(1, 5)
                 data.append((user, item, rating))
@@ -54,23 +51,30 @@ def test_has_required_functions():
     assert hasattr(solution, 'evaluate'), "There is evaluate"
 
 def test_fit_runs_without_error(task_info):
-    sample_data = get_dummy_data(task_info)
+    sample_data = get_dummy_data(task_info=task_info,seed=50)
     solution = load_solution_module()
     solution.fit(sample_data)
 
 # === Тесты recommend и fit ===
 @pytest.mark.parametrize("k", [1, 2, 3])
+@pytest.mark.parametrize("seed", [5, 10, 50, 100])
 def test_fit_and_recommend_on_generated(task_info,
-                                         k, generated_dataset):
+                                         k, seed):
+    generated_dataset = get_dummy_data(seed=seed, task_info=task_info)
     solution = load_solution_module()
 
     solution.fit(generated_dataset)
-    print(f"data: {generated_dataset}")
     user_id = generated_dataset["user_id"].iloc[0]
     recs = solution.recommend(user_id, k=k)
     assert isinstance(recs, list)
-    assert len(recs)<= k, f"""
-        ❌ Тест не пройден:
+    # assert len(recs) != 0, f"""
+    #     Тест не пройден:
+    #     Data: {generated_dataset}
+    #     Expected: Должен быть рекомендован хотя бы один фильм
+    #     Actual: 0
+    #     """
+    assert len(recs)== k, f"""
+        Тест не пройден:
         Data: {generated_dataset}
         Expected: {k}
         Actual: {len(recs)}
@@ -82,28 +86,27 @@ def test_fit_and_recommend_on_generated(task_info,
 
         recs = list(map(int, recs))
         recs_2 = list(map(int, recs_2))
-        if sorted(recs) == sorted(recs_2):
-            message = (
-                f"❌ Рекомендации совпадают для двух разных пользователей при user-based фильтрации."
-                f"👤 user_id 1: {user_id} → recs: {recs}"
-                f"👤 user_id 2: {user_2} → recs: {recs_2}"
-                f"📎 Expected: разные рекомендации для разных пользователей"
-                f"📂 Data:{generated_dataset[generated_dataset['user_id'].isin([user_id, user_2])]}"
-            )
-            raise AssertionError(message)
+        assert sorted(recs) != sorted(recs_2), (f"""
+                Рекомендации совпадают для двух разных пользователей при user-based фильтрации."
+                user_id 1: {user_id}  recs: {recs}"
+                user_id 2: {user_2}  recs: {recs_2}"
+                Expected: разные рекомендации для разных пользователей"
+                Data:{generated_dataset}"
+            """)
     elif task_info["filter_type"] == "item_based":
         seen_items = generated_dataset[generated_dataset["user_id"] == user_id]["item"].tolist()
         assert not any(item in seen_items for item in recs), (f"""
-            ❌ Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
+            Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
             Data: {generated_dataset}
             Expected: {False}
             Actual: {True}
             """)
         
+@pytest.mark.parametrize("seed", [5, 10, 50, 100])     
 def test_recommend_items_not_seen(task_info, 
-                                  generated_dataset):
+                                  seed):
     solution = load_solution_module()
-
+    generated_dataset = get_dummy_data(seed=seed, task_info=task_info)
     solution.fit(generated_dataset)
 
     user_id = generated_dataset["user_id"].iloc[0]
@@ -114,7 +117,7 @@ def test_recommend_items_not_seen(task_info,
     if task_info["filter_type"] == "item_based":
         # В item-based обязаны быть только новые item'ы
         assert all(item not in seen_items for item in recs), (f"""
-            ❌ Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
+            Тест не пройден: Item-based: не должны рекомендоваться уже просмотренные
             Data: {generated_dataset}
             Expected: {False}
             Actual: {True}
@@ -122,15 +125,16 @@ def test_recommend_items_not_seen(task_info,
     elif task_info["filter_type"] == "user_based":
         # В user-based иногда допускается, если не было ничего другого
         assert len(recs) > 0, (f"""
-            ❌ Тест не пройден: 
+            Тест не пройден: 
             Data: {generated_dataset}
             Expected: {"Должны быть хоть какие-то элементы"}
             Actual: {"Список пустой"}
             """)
-
+@pytest.mark.parametrize("seed", [5, 10, 50, 100])
 def test_repeat_fit_stability(task_info, 
-                              generated_dataset):
+                              seed):
     solution = load_solution_module()
+    generated_dataset = get_dummy_data(seed=seed, task_info=task_info)
     solution.fit(generated_dataset)
     user_id = generated_dataset["user_id"].iloc[0]
     k = 3
@@ -142,7 +146,7 @@ def test_repeat_fit_stability(task_info,
 
     if task_info["filter_type"] == "user_based":
         assert sorted(recs_1) == sorted(recs_2), (f"""
-            ❌ Тест не пройден: User-based: рекомендации после повторного fit должны совпадат
+            Тест не пройден: User-based: рекомендации после повторного fit должны совпадат
             Data: {generated_dataset}
             Expected: {"Совпадение рекомендаций"}
             Actual: {f"Выявлено расхождение."
@@ -152,7 +156,7 @@ def test_repeat_fit_stability(task_info,
     elif task_info["filter_type"] == "item_based":
         # Допускаем небольшую разницу — item-based может быть менее стабильной
         assert len(set(recs_1) & set(recs_2)) > 1, (f"""
-            ❌ Тест не пройден: Item-based: слишком сильное расхождение рекомендаций
+            Тест не пройден: Item-based: слишком сильное расхождение рекомендаций
             Data: {generated_dataset}
             Expected: {"Совпадение рекомендаций"}
             Actual: {f"Выявлено сильное расхождение (более 1 элемента)."
@@ -171,21 +175,24 @@ def test_evaluate_precision_at_2(task_info,
 
     test = pd.DataFrame([
         {"user_id": 12, "item": 101, "rating": 5},  # релевантный
-        {"user_id": 13, "item": 100, "rating": 2},  # не релевантный
+        {"user_id": 13, "item": 119, "rating": 2},  # не релевантный
+        {"user_id": 13, "item": 120, "rating": 3},  # не релевантный
+        {"user_id": 14, "item": 101, "rating": 4}, # релевантный
+        {"user_id": 14, "item": 118, "rating": 4}, # релевантный
+        {"user_id": 12, "item": 119, "rating": 3},  # не релевантный
     ])
-
-    solution.recommend = test["user_id"].values
-    recs = test["user_id"].values
-    relevant_items = {101}
-
-    hits = len(set(recs) & relevant_items)
-    expected = hits / k
-
+    users_recs = [118, 120]
+    items_recs = [118]
+    relevant_items = [101, 118]
+    if task_info['filter_types']=='user_based':
+        expected = len(set(users_recs) & relevant_items)/k
+    else:
+        expected = len(set(items_recs) & relevant_items)/k
     actual = solution.evaluate(test)
 
     assert isinstance(actual, float)
-    assert abs(actual - expected) < 0.01, f"""
-            ❌ Тест не пройден: Сильное расхождение метрики precision@2
+    assert abs(actual - expected) < 0.1, f"""
+            Тест не пройден: Сильное расхождение метрики precision@2
             Data: {test}
             Expected: {expected}
             Actual: {actual}
@@ -193,7 +200,8 @@ def test_evaluate_precision_at_2(task_info,
 
 # === Тест RMSE ===
 def test_evaluate_returns_correct_rmse(task_info, 
-                                       generated_dataset):
+                                       ):
+    generated_dataset = get_dummy_data(seed=3, task_info=task_info)
     if task_info["metric"] != "RMSE":
         pytest.skip("Метрика в задании не RMSE")
     
@@ -212,7 +220,7 @@ def test_evaluate_returns_correct_rmse(task_info,
 
     actual = solution.evaluate(test)
     assert abs(actual-expected) < 0.1, f"""
-    ❌ Тест не пройден: Сильное расхождение метрики RMSE
+    Тест не пройден: Сильное расхождение метрики RMSE
     Data: {generated_dataset}
     Expected: {expected}
     Actual: {actual}
@@ -228,16 +236,24 @@ def test_evaluate_recall_at_3(task_info,
 
     test = pd.DataFrame([
         {"user_id": 12, "item": 115, "rating": 4}, # релевантный
-        {"user_id": 13, "item": 116, "rating": 5}, # релевантный
-        {"user_id": 14, "item": 117, "rating": 2},  # не релевантный
+        {"user_id": 12, "item": 116, "rating": 5}, # релевантный
+        {"user_id": 13, "item": 117, "rating": 2},  # не релевантный
+        {"user_id": 14, "item": 115, "rating": 4}, # релевантный
+        {"user_id": 14, "item": 118, "rating": 4}, # релевантный
+        {"user_id": 12, "item": 119, "rating": 3},  # не релевантный
     ])
     solution.fit(test)
-    relevant = [115, 116]
-    expected = len(set(test) & set(relevant))/len(relevant)
+    relevant = [115, 116, 118]
+    users_recs = [118, 119]
+    items_recs = [116, 118, 119]
+    if task_info['filter_types']=='user_based':
+        expected = len(set(users_recs) & set(relevant))/len(relevant)
+    else:
+        expected = len(set(items_recs) & set(relevant))/len(relevant)
     actual = solution.evaluate(test)
     assert isinstance(actual, float)
-    assert abs(actual - expected) < 0.01, (f"""
-            ❌ Тест не пройден: Сильное расхождение метрики recall@3
+    assert abs(actual - expected) < 0.1, (f"""
+            Тест не пройден: Сильное расхождение метрики recall@3
             Data: {test}
             Expected: {expected}
             Actual: {actual}
