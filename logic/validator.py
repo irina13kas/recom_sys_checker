@@ -2,9 +2,15 @@ import subprocess
 import os
 import json
 import tempfile
+import pandas as pd
 from typing import Dict
 
 def run_pytest(task_info: Dict) -> str:
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", None)
+    pd.set_option("display.max_colwidth", None)
+    print("📋 Начинается проверка решения...\n")
     """
     Запускает pytest с передачей task_info как параметра.
     Возвращает текстовый отчет.
@@ -31,8 +37,6 @@ def run_pytest(task_info: Dict) -> str:
             for line in result.stdout.splitlines() + result.stderr.splitlines()
             if line.strip().startswith("E")
         ]
-
-        error_lines = [line.encode().decode('unicode_escape') for line in error_lines]
 
         if result.returncode != 0 and error_lines:
             return "❌ Тесты не пройдены. Подробности:\n" + "\n".join(error_lines)
@@ -77,6 +81,10 @@ def run_black_check(file_path="solutions/solution.py") -> str:
 
 
 def generate_report(task_info: Dict) -> str:
+    pd.set_option("display.max_rows", None)
+    pd.set_option("display.max_columns", None)
+    pd.set_option("display.width", None)
+    pd.set_option("display.max_colwidth", None)
     print("📋 Начинается проверка решения...\n")
     report = []
 

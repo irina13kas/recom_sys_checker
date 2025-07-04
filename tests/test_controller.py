@@ -1,9 +1,14 @@
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
+import pytest
+import time
+import io
 from controller import TaskService
 
 
 class TestTaskService(unittest.TestCase):
+    def setUp(self):
+        self.service = TaskService()
 
     @patch("controller.TaskFactory.generate_description")
     def test_generate_task(self, mock_generate_description):
@@ -49,7 +54,7 @@ class TestTaskService(unittest.TestCase):
 
         self.assertIn("Отсутствуют task_info", str(context.exception))
 
-    @patch("controller.save_report_to_csv")
+    @patch("controller.save_report_to_csv", return_value="exported/path/report.csv")
     def test_export_report(self, mock_save):
         mock_save.return_value = "report.csv"
         service = TaskService()
@@ -57,6 +62,34 @@ class TestTaskService(unittest.TestCase):
         result = service.export_report("Some report", path="custom.csv")
         self.assertEqual(result, "report.csv")
         mock_save.assert_called_once_with("Some report", "custom.csv")
+
+    @patch("controller.generate_report", return_value="Dummy report content")
+    def test_generate_and_validate_stress(self, mock_generate_report):
+        mock_generate_report.return_value = "Dummy report content"
+
+        num_iterations = 10000
+        start_time = time.time()
+
+        for _ in range(num_iterations):
+            task_text, task_info = self.service.generate_task()
+            self.assertIsNotNone(task_text)
+            self.assertIsNotNone(task_info)
+
+            fake_solution_code = b"def solution():\n    return 42"
+            from io import BytesIO
+            fake_file = BytesIO(fake_solution_code)
+            self.service.upload_solution(fake_file)
+
+            report = self.service.validate_solution()
+            self.assertEqual(report, "Dummy report content")
+
+        end_time = time.time()
+        duration = end_time - start_time
+
+        print(f"\nExecuted {num_iterations} iterations in {duration:.2f} seconds")
+
+        self.assertLess(duration, 20, "Тест выполняется слишком долго")
+
 
 
 if __name__ == "__main__":

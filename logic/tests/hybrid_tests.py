@@ -192,7 +192,7 @@ def test_evaluate_returns_correct_rmse(task_info):
     actual = solution.evaluate(test)
     assert abs(actual-expected) < 0.1, f"""
     Тест не пройден: Сильное расхождение метрики RMSE
-    Data: {generated_dataset}
+    Data: {dummy_data}
     Expected: {expected}
     Actual: {actual}
     """

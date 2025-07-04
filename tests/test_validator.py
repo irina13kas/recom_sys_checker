@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import os
+from logic import validator
+import time
 from logic.validator import run_pytest, run_flake8, run_black_check, generate_report
 
 
@@ -70,6 +71,34 @@ class TestValidator(unittest.TestCase):
         self.assertIn("✅ Все тесты пройдены успешно!", report)
         self.assertIn("flake8", report)
         self.assertIn("black", report)
+
+    @patch("logic.validator.subprocess.run")
+    def test_generate_report_stress(self, mock_subprocess_run):
+
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = "All good!"
+        mock_result.stderr = ""
+        mock_subprocess_run.return_value = mock_result
+
+        task_info_example = {
+            "type": "collaborative",
+            "name": "test_task",
+            "params": {"n_users": 10, "n_items": 5}
+        }
+
+        n_runs = 10000
+        start_time = time.time()
+
+        for i in range(n_runs):
+            with self.subTest(i=i):
+                report = validator.generate_report(task_info_example)
+                self.assertIn("🧪 Функциональные тесты", report)
+                self.assertIn("✅ flake8", report)
+                self.assertIn("✅ black", report)
+
+        total_time = time.time() - start_time
+        print(f"\n⏱️ Выполнено {n_runs} проверок за {total_time:.2f} секунд.")
 
 
 if __name__ == "__main__":
